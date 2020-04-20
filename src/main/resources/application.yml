@@ -1,0 +1,19 @@
+spring:
+  jpa:
+    database: postgresql
+    show-sql: true
+    hibernate:
+      dialect: org.hibernate.dialect.PostgerSQLDialect
+      ddl-auto: create-drop
+  flyway:
+    baselineOnMigrate: true
+    locations: filesystem:db/migration
+
+datasource:
+  url: jdbc:postgresql://localhost:5432/postgres
+  username: postgres
+  password: toor
+  driver-class-name: org.postgresql.Driver
+
+server:
+  port: 8090
