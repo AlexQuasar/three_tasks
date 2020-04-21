@@ -2,8 +2,8 @@ package com.alexquasar.threeTasks.thirdTask.service;
 
 import com.alexquasar.threeTasks.thirdTask.GeneratorUrlUtils;
 import com.alexquasar.threeTasks.thirdTask.entity.Url;
-import com.alexquasar.threeTasks.thirdTask.entity.UrlDuplicates;
-import com.alexquasar.threeTasks.thirdTask.repository.UrlDuplicatesRepository;
+import com.alexquasar.threeTasks.thirdTask.entity.UrlDuplicate;
+import com.alexquasar.threeTasks.thirdTask.repository.UrlDuplicateRepository;
 import com.alexquasar.threeTasks.thirdTask.repository.UrlRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,7 +25,7 @@ public class UrlServiceTest {
     UrlRepository urlRepository;
 
     @Mock
-    UrlDuplicatesRepository urlDuplicatesRepository;
+    UrlDuplicateRepository urlDuplicateRepository;
 
     @InjectMocks
     UrlService urlService;
@@ -37,7 +37,7 @@ public class UrlServiceTest {
         String url = "google.com";
 
         when(urlRepository.findByLink(anyString())).thenReturn(null);
-        when(urlDuplicatesRepository.findByLink(anyString())).thenReturn(null);
+        when(urlDuplicateRepository.findByLink(anyString())).thenReturn(null);
 
         urlService.addUrl(url);
 
@@ -54,12 +54,12 @@ public class UrlServiceTest {
 
         Url url = new Url(urls.get(0));
         when(urlRepository.findByLink(anyString())).thenReturn(url);
-        when(urlDuplicatesRepository.findByLink(anyString())).thenReturn(null);
+        when(urlDuplicateRepository.findByLink(anyString())).thenReturn(null);
 
         urlService.addUrls(urls);
 
         verify(urlRepository).saveAll(anyCollection());
-        verify(urlDuplicatesRepository, times(countUrl)).save(any(UrlDuplicates.class));
+        verify(urlDuplicateRepository, times(countUrl)).save(any(UrlDuplicate.class));
     }
 
     @Test
@@ -68,17 +68,17 @@ public class UrlServiceTest {
         int countDuplicates = 2;
         int maxDuplicates = 2;
 
-        List<UrlDuplicates> urls =  new ArrayList<>();
+        List<UrlDuplicate> urls =  new ArrayList<>();
         List<String> links = generatorUrlUtils.generateLinks(countUrl, countDuplicates, maxDuplicates);
         for (String link : links) {
-            urls.add(new UrlDuplicates(link));
+            urls.add(new UrlDuplicate(link));
         }
 
         assertEquals(countUrl, urls.size());
 
-        when(urlDuplicatesRepository.findAll()).thenReturn(urls);
+        when(urlDuplicateRepository.findAll()).thenReturn(urls);
 
-        List<UrlDuplicates> duplicatesUrls = urlService.getDuplicatesUrls();
+        List<UrlDuplicate> duplicatesUrls = urlService.getDuplicatesUrls();
 
         assertNotNull(duplicatesUrls);
         assertNotEquals(0, duplicatesUrls.size());

@@ -1,8 +1,7 @@
 package com.alexquasar.threeTasks.thirdTask.web.input;
 
 import com.alexquasar.threeTasks.thirdTask.GeneratorUrlUtils;
-import com.alexquasar.threeTasks.thirdTask.entity.Url;
-import com.alexquasar.threeTasks.thirdTask.entity.UrlDuplicates;
+import com.alexquasar.threeTasks.thirdTask.entity.UrlDuplicate;
 import com.alexquasar.threeTasks.thirdTask.repository.UrlRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -99,9 +98,10 @@ public class UrlRestControllerTest {
         String addUrls = urlController + "/addUrls";
         String getDuplicates = urlController + "/getDuplicates";
 
-        long countUrl = 10_000_000_000L;
-        int countDuplicatesInOneIteration = 5;
-        int maxDuplicatesInOneIteration = 5;
+        long countUrl = 1_000_000L;//10_000_000_000L;
+        maxSizeCollection = 10_000;
+        int countDuplicatesInOneIteration = 10;
+        int maxDuplicatesInOneIteration = 10;
         long countIteration = countUrl / maxSizeCollection;
 
         for (long i = 0; i < countIteration; i++) {
@@ -119,7 +119,7 @@ public class UrlRestControllerTest {
         .andReturn();
 
         String content = result.getResponse().getContentAsString();
-        List<UrlDuplicates> duplicatesUrls = mapper.readValue(content, new TypeReference<List<UrlDuplicates>>() {});
+        List<UrlDuplicate> duplicatesUrls = mapper.readValue(content, new TypeReference<List<UrlDuplicate>>() {});
 
         long countDuplicates = countIteration * countDuplicatesInOneIteration;
         assertEquals(countDuplicates, duplicatesUrls.size());

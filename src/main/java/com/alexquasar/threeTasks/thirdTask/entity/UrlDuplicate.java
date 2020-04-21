@@ -11,9 +11,9 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Getter
 @Setter
-public class UrlDuplicates {
+public class UrlDuplicate {
 
-    public UrlDuplicates(String link) {
+    public UrlDuplicate(String link) {
         this.link = link;
     }
 

@@ -1,7 +1,6 @@
 package com.alexquasar.threeTasks.thirdTask.web.input;
 
-import com.alexquasar.threeTasks.thirdTask.entity.Url;
-import com.alexquasar.threeTasks.thirdTask.entity.UrlDuplicates;
+import com.alexquasar.threeTasks.thirdTask.entity.UrlDuplicate;
 import com.alexquasar.threeTasks.thirdTask.service.UrlService;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +29,7 @@ public class UrlRestController {
     }
 
     @GetMapping("/getDuplicates")
-    public List<UrlDuplicates> getDuplicates() {
+    public List<UrlDuplicate> getDuplicates() {
         return urlService.getDuplicatesUrls();
     }
 }

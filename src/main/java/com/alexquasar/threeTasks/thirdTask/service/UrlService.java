@@ -1,8 +1,8 @@
 package com.alexquasar.threeTasks.thirdTask.service;
 
 import com.alexquasar.threeTasks.thirdTask.entity.Url;
-import com.alexquasar.threeTasks.thirdTask.entity.UrlDuplicates;
-import com.alexquasar.threeTasks.thirdTask.repository.UrlDuplicatesRepository;
+import com.alexquasar.threeTasks.thirdTask.entity.UrlDuplicate;
+import com.alexquasar.threeTasks.thirdTask.repository.UrlDuplicateRepository;
 import com.alexquasar.threeTasks.thirdTask.repository.UrlRepository;
 import org.springframework.stereotype.Service;
 
@@ -33,11 +33,11 @@ import java.util.List;
 public class UrlService {
 
     private UrlRepository urlRepository;
-    private UrlDuplicatesRepository urlDuplicatesRepository;
+    private UrlDuplicateRepository urlDuplicateRepository;
 
-    public UrlService(UrlRepository urlRepository, UrlDuplicatesRepository urlDuplicatesRepository) {
+    public UrlService(UrlRepository urlRepository, UrlDuplicateRepository urlDuplicateRepository) {
         this.urlRepository = urlRepository;
-        this.urlDuplicatesRepository = urlDuplicatesRepository;
+        this.urlDuplicateRepository = urlDuplicateRepository;
     }
 
     public void addUrl(String link) {
@@ -54,28 +54,39 @@ public class UrlService {
     }
 
     private void addLinkDuplicate(String link) {
-        UrlDuplicates url = urlDuplicatesRepository.findByLink(link);
+        UrlDuplicate url = urlDuplicateRepository.findByLink(link);
         if (url == null) {
-            urlDuplicatesRepository.save(new UrlDuplicates(link));
+            urlDuplicateRepository.save(new UrlDuplicate(link));
         }
     }
 
     public void addUrls(List<String> links) {
         List<Url> urls = new ArrayList<>();
-
+        List<String> duplicateUrl = urlRepository.findAllDuplicates(links);
         for (String link : links) {
             Url url = new Url(link);
-            if (!urls.contains(url) && !checkLinkDuplicate(link)) {
+            if (urls.contains(url)) {
+                if (!duplicateUrl.contains(link)) {
+                    duplicateUrl.add(link);
+                }
+            } else if (!duplicateUrl.contains(link)) {
                 urls.add(url);
-            } else {
-                addLinkDuplicate(link);
             }
         }
-
         urlRepository.saveAll(urls);
+
+        List<UrlDuplicate> duplicateUrls = new ArrayList<>();
+        List<String> doubleDuplicatesUrl = urlDuplicateRepository.findAllDuplicates(duplicateUrl);
+        for (String link : duplicateUrl) {
+            UrlDuplicate urlDuplicate = new UrlDuplicate(link);
+            if (!duplicateUrls.contains(urlDuplicate) && !doubleDuplicatesUrl.contains(link)) {
+                duplicateUrls.add(urlDuplicate);
+            }
+        }
+        urlDuplicateRepository.saveAll(duplicateUrls);
     }
 
-    public List<UrlDuplicates> getDuplicatesUrls() {
-        return urlDuplicatesRepository.findAll();
+    public List<UrlDuplicate> getDuplicatesUrls() {
+        return urlDuplicateRepository.findAll();
     }
 }
