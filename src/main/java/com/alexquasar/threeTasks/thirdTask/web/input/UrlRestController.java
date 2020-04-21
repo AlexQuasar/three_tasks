@@ -1,9 +1,9 @@
 package com.alexquasar.threeTasks.thirdTask.web.input;
 
+import com.alexquasar.threeTasks.thirdTask.entity.Url;
+import com.alexquasar.threeTasks.thirdTask.entity.UrlDuplicates;
 import com.alexquasar.threeTasks.thirdTask.service.UrlService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -17,8 +17,20 @@ public class UrlRestController {
         this.urlService = urlService;
     }
 
+    @PostMapping("addUrl")
+    public String addUrl(@RequestBody String link) {
+        urlService.addUrl(link);
+        return "added";
+    }
+
+    @PostMapping("addUrls")
+    public String addUrls(@RequestBody List<String> links) {
+        urlService.addUrls(links);
+        return "added";
+    }
+
     @GetMapping("/getDuplicates")
-    public List<String> getDuplicates() {
+    public List<UrlDuplicates> getDuplicates() {
         return urlService.getDuplicatesUrls();
     }
 }

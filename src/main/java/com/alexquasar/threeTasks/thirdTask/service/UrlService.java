@@ -1,6 +1,8 @@
 package com.alexquasar.threeTasks.thirdTask.service;
 
 import com.alexquasar.threeTasks.thirdTask.entity.Url;
+import com.alexquasar.threeTasks.thirdTask.entity.UrlDuplicates;
+import com.alexquasar.threeTasks.thirdTask.repository.UrlDuplicatesRepository;
 import com.alexquasar.threeTasks.thirdTask.repository.UrlRepository;
 import org.springframework.stereotype.Service;
 
@@ -20,33 +22,60 @@ import java.util.List;
 //      и чем дальше, тем чаще встречаются такие элементы.
 //      думал что причина в hashCode, но с TreeSet такая же проблема. найти причину такого поведения не удалось.
 //      в итоге до 30_000_000 не доходило;
-//  3) решил реализовать данную задачу через базу данных, где в базу, небольшими порциями, записываются Url,
-//      а потом через репозиторий идет выборка из таблицы произвольным запросом сразу только дублирующихся ссылок;
+//  3) решил реализовать данную задачу через базу данных, где в базу, небольшими порциями, отдельно в разных таблицах,
+//      записываются Url - в таблицу "url" только оригинальные, а в таблицу "url_duplicates" только дубликаты,
+//      чтобы потом одним запросом выбрать все дубликаты.
+//      тут столкнулся с проблемой, что происходит очень много примитивных запросов по поиску существующей записи в таблице,
+//      что очень сильно нагружает систему - не разумное решение.
+//      в итоге, даже с учетом большого количества простых запросов, результат не был получен;
 
 @Service
 public class UrlService {
 
     private UrlRepository urlRepository;
+    private UrlDuplicatesRepository urlDuplicatesRepository;
 
-    public UrlService(UrlRepository urlRepository) {
+    public UrlService(UrlRepository urlRepository, UrlDuplicatesRepository urlDuplicatesRepository) {
         this.urlRepository = urlRepository;
+        this.urlDuplicatesRepository = urlDuplicatesRepository;
     }
 
     public void addUrl(String link) {
-        urlRepository.save(new Url(link));
+        if (!checkLinkDuplicate(link)) {
+            urlRepository.save(new Url(link));
+        } else {
+            addLinkDuplicate(link);
+        }
+    }
+
+    private Boolean checkLinkDuplicate(String link) {
+        Url url = urlRepository.findByLink(link);
+        return url != null;
+    }
+
+    private void addLinkDuplicate(String link) {
+        UrlDuplicates url = urlDuplicatesRepository.findByLink(link);
+        if (url == null) {
+            urlDuplicatesRepository.save(new UrlDuplicates(link));
+        }
     }
 
     public void addUrls(List<String> links) {
         List<Url> urls = new ArrayList<>();
 
         for (String link : links) {
-            urls.add(new Url(link));
+            Url url = new Url(link);
+            if (!urls.contains(url) && !checkLinkDuplicate(link)) {
+                urls.add(url);
+            } else {
+                addLinkDuplicate(link);
+            }
         }
 
         urlRepository.saveAll(urls);
     }
 
-    public List<String> getDuplicatesUrls() {
-        return urlRepository.findAllDuplicates();
+    public List<UrlDuplicates> getDuplicatesUrls() {
+        return urlDuplicatesRepository.findAll();
     }
 }

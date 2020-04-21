@@ -2,6 +2,7 @@ package com.alexquasar.threeTasks.thirdTask.web.input;
 
 import com.alexquasar.threeTasks.thirdTask.GeneratorUrlUtils;
 import com.alexquasar.threeTasks.thirdTask.entity.Url;
+import com.alexquasar.threeTasks.thirdTask.entity.UrlDuplicates;
 import com.alexquasar.threeTasks.thirdTask.repository.UrlRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,6 +25,7 @@ import java.util.logging.Logger;
 
 import static org.junit.Assert.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -56,17 +58,59 @@ public class UrlRestControllerTest {
 
     @Test
     @Transactional
+    public void addUrlTest() throws Exception {
+        String addUrl = urlController + "/addUrl";
+
+        int expectedVisitsSize = urlRepository.findAll().size() + 1;
+
+        mockMvc.perform(post(addUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(addUrl)))
+        .andExpect(status().isOk());
+
+        assertEquals(expectedVisitsSize, urlRepository.findAll().size());
+    }
+
+    @Test
+    @Transactional
+    public void addUrlsTest() throws Exception {
+        String addUrls = urlController + "/addUrls";
+
+        int countUrl = 10;
+        int countDuplicates = 0;
+        int maxDuplicates = 0;
+
+        List<String> urls = generatorUrlUtils.generateLinks(countUrl, countDuplicates, maxDuplicates);
+        int expectedVisitsSize = urlRepository.findAll().size() + urls.size();
+
+        mockMvc.perform(post(addUrls)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(urls)))
+        .andExpect(status().isOk());
+
+        assertEquals(expectedVisitsSize, urlRepository.findAll().size());
+    }
+
+    @Test
+    @Transactional
     public void getDuplicatesTest() throws Exception {
+        String addUrls = urlController + "/addUrls";
         String getDuplicates = urlController + "/getDuplicates";
 
-        long countUrl = 100_000_000L;
-        int countDuplicatesInOneIteration = 10;
-        int maxDuplicatesInOneIteration = 10;
+        long countUrl = 10_000_000_000L;
+        int countDuplicatesInOneIteration = 5;
+        int maxDuplicatesInOneIteration = 5;
         long countIteration = countUrl / maxSizeCollection;
 
         for (long i = 0; i < countIteration; i++) {
-            List<Url> urls = generatorUrlUtils.generateUrls(maxSizeCollection, countDuplicatesInOneIteration, maxDuplicatesInOneIteration);
-            urlRepository.saveAll(urls);
+            List<String> urls = generatorUrlUtils.generateLinks(maxSizeCollection, countDuplicatesInOneIteration, maxDuplicatesInOneIteration);
+            mockMvc.perform(post(addUrls)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .content(mapper.writeValueAsString(urls)))
+            .andExpect(status().isOk());
         }
 
         MvcResult result = mockMvc.perform(get(getDuplicates)
@@ -75,7 +119,7 @@ public class UrlRestControllerTest {
         .andReturn();
 
         String content = result.getResponse().getContentAsString();
-        List<String> duplicatesUrls = mapper.readValue(content, new TypeReference<List<String>>() {});
+        List<UrlDuplicates> duplicatesUrls = mapper.readValue(content, new TypeReference<List<UrlDuplicates>>() {});
 
         long countDuplicates = countIteration * countDuplicatesInOneIteration;
         assertEquals(countDuplicates, duplicatesUrls.size());

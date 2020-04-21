@@ -2,6 +2,8 @@ package com.alexquasar.threeTasks.thirdTask.service;
 
 import com.alexquasar.threeTasks.thirdTask.GeneratorUrlUtils;
 import com.alexquasar.threeTasks.thirdTask.entity.Url;
+import com.alexquasar.threeTasks.thirdTask.entity.UrlDuplicates;
+import com.alexquasar.threeTasks.thirdTask.repository.UrlDuplicatesRepository;
 import com.alexquasar.threeTasks.thirdTask.repository.UrlRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,7 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UrlServiceTest {
@@ -21,10 +24,43 @@ public class UrlServiceTest {
     @Mock
     UrlRepository urlRepository;
 
+    @Mock
+    UrlDuplicatesRepository urlDuplicatesRepository;
+
     @InjectMocks
     UrlService urlService;
 
     GeneratorUrlUtils generatorUrlUtils = new GeneratorUrlUtils();
+
+    @Test
+    public void addUrlTest() {
+        String url = "google.com";
+
+        when(urlRepository.findByLink(anyString())).thenReturn(null);
+        when(urlDuplicatesRepository.findByLink(anyString())).thenReturn(null);
+
+        urlService.addUrl(url);
+
+        verify(urlRepository).save(any(Url.class));
+    }
+
+    @Test
+    public void addUrlsTest() {
+        int countUrl = 10;
+        int countDuplicates = 0;
+        int maxDuplicates = 0;
+
+        List<String> urls = generatorUrlUtils.generateLinks(countUrl, countDuplicates, maxDuplicates);
+
+        Url url = new Url(urls.get(0));
+        when(urlRepository.findByLink(anyString())).thenReturn(url);
+        when(urlDuplicatesRepository.findByLink(anyString())).thenReturn(null);
+
+        urlService.addUrls(urls);
+
+        verify(urlRepository).saveAll(anyCollection());
+        verify(urlDuplicatesRepository, times(countUrl)).save(any(UrlDuplicates.class));
+    }
 
     @Test
     public void getDuplicatesUrlsTest() {
@@ -32,20 +68,20 @@ public class UrlServiceTest {
         int countDuplicates = 2;
         int maxDuplicates = 2;
 
-        List<Url> urls = generatorUrlUtils.generateUrls(countUrl, countDuplicates, maxDuplicates);
-        assertEquals(countUrl, urls.size());
-
-        List<String> generatedDuplicatesUrls = new ArrayList<>();
-        for (Url url : urls) {
-            generatedDuplicatesUrls.add(url.getLink());
+        List<UrlDuplicates> urls =  new ArrayList<>();
+        List<String> links = generatorUrlUtils.generateLinks(countUrl, countDuplicates, maxDuplicates);
+        for (String link : links) {
+            urls.add(new UrlDuplicates(link));
         }
 
-        when(urlRepository.findAllDuplicates()).thenReturn(generatedDuplicatesUrls);
+        assertEquals(countUrl, urls.size());
 
-        List<String> duplicatesUrls = urlService.getDuplicatesUrls();
+        when(urlDuplicatesRepository.findAll()).thenReturn(urls);
+
+        List<UrlDuplicates> duplicatesUrls = urlService.getDuplicatesUrls();
 
         assertNotNull(duplicatesUrls);
         assertNotEquals(0, duplicatesUrls.size());
-        assertEquals(generatedDuplicatesUrls.size(), duplicatesUrls.size());
+        assertEquals(urls.size(), duplicatesUrls.size());
     }
 }

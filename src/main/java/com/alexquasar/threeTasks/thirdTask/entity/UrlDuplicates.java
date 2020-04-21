@@ -1,6 +1,5 @@
 package com.alexquasar.threeTasks.thirdTask.entity;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -8,14 +7,13 @@ import lombok.Setter;
 import javax.persistence.*;
 
 @Entity
-@Table(schema = "public", name = "url")
-@EqualsAndHashCode
+@Table(schema = "public", name = "url_duplicates")
 @NoArgsConstructor
 @Getter
 @Setter
-public class Url {
+public class UrlDuplicates {
 
-    public Url(String link) {
+    public UrlDuplicates(String link) {
         this.link = link;
     }
 

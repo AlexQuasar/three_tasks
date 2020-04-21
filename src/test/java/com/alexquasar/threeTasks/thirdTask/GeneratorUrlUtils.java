@@ -37,4 +37,27 @@ public class GeneratorUrlUtils {
 
         return urls;
     }
+
+    public List<String> generateLinks(int countUrl, int countDuplicates, int maxDuplicates) {
+        List<String> urls = new ArrayList<>();
+
+        int countUrlWithoutDuplicates = countUrl - countDuplicates * maxDuplicates;
+
+        int sizeSites = sites.size();
+        for (int i = 0; i < countUrlWithoutDuplicates; i++) {
+            int index = random.nextInt(sizeSites);
+            urls.add(sites.get(index) + i);
+        }
+
+        int urlsSize = urls.size();
+        for (int i = 0; i < countDuplicates; i++) {
+            int index = random.nextInt(urlsSize);
+            String site = urls.get(index);
+            for (int j = 0; j < maxDuplicates; j++) {
+                urls.add(site + "_" + site + i);
+            }
+        }
+
+        return urls;
+    }
 }
