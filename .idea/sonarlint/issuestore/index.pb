@@ -36,3 +36,5 @@ z
 Jsrc/main/java/com/alexquasar/threeTasks/thirdTask/entity/UrlDuplicate.java,f\7\f7b48b63fd980c9e1bd4714a3db7a1b4ca7b2a87
 à
 Xsrc/main/java/com/alexquasar/threeTasks/thirdTask/repository/UrlDuplicateRepository.java,c\0\c0c01c4d51ee4c2289448813cbf131cb1b76f5ad
+Å
+Qsrc/main/java/com/alexquasar/threeTasks/thirdTask/exception/ServiceException.java,d\7\d7a0f3ad437a8c9703f41ab808fa970321d47cea

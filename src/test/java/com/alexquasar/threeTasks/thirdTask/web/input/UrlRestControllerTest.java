@@ -98,12 +98,12 @@ public class UrlRestControllerTest {
         String addUrls = urlController + "/addUrls";
         String getDuplicates = urlController + "/getDuplicates";
 
-        // 10_000 - 5 sec
-        // 100_000 - 35 sec
-        // 1_000_000 - 13 min
-        // 10_000_000 -
-        long countUrl = 10L;//10_000_000_000L;
-        maxSizeCollection = 10;
+        // 10_000 - 5 sec // < 1 sec
+        // 100_000 - 35 sec // 9 sec
+        // 1_000_000 - 13 min // 1 min 37 sec
+        // 10_000_000 - ??? > 2 h // 14 min 45 sec
+        long countUrl = 10_000_000L;//10_000_000_000L;
+        maxSizeCollection = 10_000;
         int countDuplicatesInOneIteration = 2;
         int maxDuplicatesInOneIteration = 2;
         long countIteration = countUrl / maxSizeCollection;

@@ -51,12 +51,6 @@
         </dependency>
         <!--END Spring part-->
 
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>5.4.0.Final</version>
-        </dependency>
-
         <!--START Tests part-->
         <dependency>
             <groupId>junit</groupId>
