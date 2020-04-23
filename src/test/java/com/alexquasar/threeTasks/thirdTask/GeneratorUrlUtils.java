@@ -2,6 +2,8 @@ package com.alexquasar.threeTasks.thirdTask;
 
 import com.alexquasar.threeTasks.thirdTask.entity.Url;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -46,7 +48,7 @@ public class GeneratorUrlUtils {
         int sizeSites = sites.size();
         for (int i = 0; i < countUrlWithoutDuplicates; i++) {
             int index = random.nextInt(sizeSites);
-            urls.add(sites.get(index) + i);
+            urls.add(sites.get(index) + Timestamp.valueOf(LocalDateTime.now()).getTime() + i);
         }
 
         int urlsSize = urls.size();

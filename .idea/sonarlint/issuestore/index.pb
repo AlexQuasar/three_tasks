@@ -24,8 +24,6 @@ R
 "src/main/resources/application.yml,a\6\a6d8b8556fee0e03112ce2bf34b8cb27a7dc9e58
 T
 $db/migration/V1_1__create_tables.sql,4\5\458a0b3a3dfc4aa16ebd6937b3c8b431e7d38d8a
-‰
-Ysrc/main/java/com/alexquasar/threeTasks/thirdTask/repository/UrlDuplicatesRepository.java,d\4\d4d3420cc20717efd37cff36410cf92e3dc219f0
 y
 Isrc/main/java/com/alexquasar/threeTasks/thirdTask/service/UrlService.java,7\c\7ca49329e0de216e72b0f5e68b54c866ae7e2e5b
 ‚
@@ -34,5 +32,7 @@ Rsrc/main/java/com/alexquasar/threeTasks/thirdTask/web/input/UrlRestController.j
 Msrc/test/java/com/alexquasar/threeTasks/thirdTask/service/UrlServiceTest.java,7\e\7e9b0e4a48a7b83787ad24c8417ff633b0ad8ff4
 †
 Vsrc/test/java/com/alexquasar/threeTasks/thirdTask/web/input/UrlRestControllerTest.java,1\8\184298209484dbb63eafed3c8694aa118d4b3dd9
-{
-Ksrc/main/java/com/alexquasar/threeTasks/thirdTask/entity/UrlDuplicates.java,b\a\baf2f6f5960f8870d7a2be93e98e0361db9403ce
+z
+Jsrc/main/java/com/alexquasar/threeTasks/thirdTask/entity/UrlDuplicate.java,f\7\f7b48b63fd980c9e1bd4714a3db7a1b4ca7b2a87
+ˆ
+Xsrc/main/java/com/alexquasar/threeTasks/thirdTask/repository/UrlDuplicateRepository.java,c\0\c0c01c4d51ee4c2289448813cbf131cb1b76f5ad

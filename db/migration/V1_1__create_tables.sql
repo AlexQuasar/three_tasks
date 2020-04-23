@@ -6,6 +6,8 @@ create table url
     link varchar not null
 );
 
+create index on url(link TEXT_PATTERN_OPS);
+
 create unique index url_id_uindex
 	on url (id);
 
@@ -22,6 +24,8 @@ create table url_duplicates
     id serial not null,
     link varchar not null
 );
+
+create index on url_duplicates(link TEXT_PATTERN_OPS);
 
 create unique index url_duplicates_id_uindex
     on url_duplicates (id);

@@ -4,10 +4,20 @@ import com.alexquasar.threeTasks.thirdTask.entity.Url;
 import com.alexquasar.threeTasks.thirdTask.entity.UrlDuplicate;
 import com.alexquasar.threeTasks.thirdTask.repository.UrlDuplicateRepository;
 import com.alexquasar.threeTasks.thirdTask.repository.UrlRepository;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.hibernate5.HibernateOperations;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import javax.persistence.PersistenceException;
+import javax.validation.ConstraintViolationException;
+import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 // TODO: Необходимо обработать большое количество URL(10_000_000_000), указать для каждого url, есть ли у него дубликаты.
 //  а) Описать решение данной задачи.
@@ -34,10 +44,12 @@ public class UrlService {
 
     private UrlRepository urlRepository;
     private UrlDuplicateRepository urlDuplicateRepository;
+    private EntityManagerFactory entityManagerFactory;
 
-    public UrlService(UrlRepository urlRepository, UrlDuplicateRepository urlDuplicateRepository) {
+    public UrlService(UrlRepository urlRepository, UrlDuplicateRepository urlDuplicateRepository, EntityManagerFactory entityManagerFactory) {
         this.urlRepository = urlRepository;
         this.urlDuplicateRepository = urlDuplicateRepository;
+        this.entityManagerFactory = entityManagerFactory;
     }
 
     public void addUrl(String link) {
@@ -61,32 +73,105 @@ public class UrlService {
     }
 
     public void addUrls(List<String> links) {
-        List<Url> urls = new ArrayList<>();
-        List<String> duplicateUrl = urlRepository.findAllDuplicates(links);
-        for (String link : links) {
-            Url url = new Url(link);
-            if (urls.contains(url)) {
-                if (!duplicateUrl.contains(link)) {
-                    duplicateUrl.add(link);
-                }
-            } else if (!duplicateUrl.contains(link)) {
-                urls.add(url);
-            }
-        }
-        urlRepository.saveAll(urls);
+//        EntityManagerFactory entityManagerFactory =
+//                Persistence.createEntityManagerFactory(Url.class.getName());
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
 
-        List<UrlDuplicate> duplicateUrls = new ArrayList<>();
-        List<String> doubleDuplicatesUrl = urlDuplicateRepository.findAllDuplicates(duplicateUrl);
-        for (String link : duplicateUrl) {
-            UrlDuplicate urlDuplicate = new UrlDuplicate(link);
-            if (!duplicateUrls.contains(urlDuplicate) && !doubleDuplicatesUrl.contains(link)) {
-                duplicateUrls.add(urlDuplicate);
-            }
+//        List<Url> urls = new ArrayList<>();
+//        List<String> duplicateUrl = urlRepository.findAllDuplicates(links);
+        StringBuilder query = new StringBuilder("insert into url (link) values ");
+        int collectionIteration = links.size();
+        for (int i = 0; i < collectionIteration; i++) {
+//            Url url = new Url(link);
+//            if (!urls.contains(url)) {
+//                if (!duplicateUrl.contains(link)) {
+//                    duplicateUrl.add(link);
+//                }
+//            } else if (!duplicateUrl.contains(link)) {
+//                urls.add(url);
+//            }
+            query.append("('").append(links.get(i)).append("')").append(i == collectionIteration - 1 ? " " : ", ");
         }
-        urlDuplicateRepository.saveAll(duplicateUrls);
+        query.append("on conflict (link) do nothing returning link");
+
+
+//        entityManager.getTransaction().begin();
+//        urls.forEach(i -> entityManager.persist(i));
+//        List<Url> resultList = entityManager.createQuery(query.toString()).getResultList();
+//        entityManager.getTransaction().commit();
+        try {
+            addDupl(query.toString());
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+//        String savedUrls = urlRepository.saveAllWithDuplicates(links);
+//        List<String> savedLinks = Arrays.asList(savedUrls.split(","));
+//        List<String> duplicateLinks = links.stream().filter(i -> !savedLinks.contains(i)).collect(Collectors.toList());
+//        urlDuplicateRepository.saveAllWithDuplicates(duplicateLinks);
+
+//        List<UrlDuplicate> duplicateUrls = new ArrayList<>();
+//        List<String> doubleDuplicatesUrl = urlDuplicateRepository.findAllDuplicates(duplicateUrl);
+//        for (String link : duplicateUrl) {
+//            UrlDuplicate urlDuplicate = new UrlDuplicate(link);
+//            if (!duplicateUrls.contains(urlDuplicate) && !doubleDuplicatesUrl.contains(link)) {
+//                duplicateUrls.add(urlDuplicate);
+//            }
+//        }
+//        urlDuplicateRepository.saveAll(duplicateUrls);
     }
+
+//    private String getLinkFromMessage(String messageException) {
+//        String beginSubString = "Key (link)=(";
+//        String endSubString = ") already exists";
+//        int beginIndex = messageException.indexOf(beginSubString) + beginSubString.length();
+//        int endIndex = messageException.indexOf(endSubString);
+//
+//        return messageException.substring(beginIndex, endIndex);
+//    }
 
     public List<UrlDuplicate> getDuplicatesUrls() {
         return urlDuplicateRepository.findAll();
+    }
+
+    private void addDupl(String query) throws SQLException {
+        /**
+         * эта строка загружает драйвер DB.
+         * раскомментируйте если прописываете драйвер вручную
+         */
+        //Class.forName("com.mysql.jdbc.Driver");
+        Connection conn = null;
+        try {
+            conn = DriverManager.getConnection(
+                    "jdbc:postgresql://localhost:5432/postgres",
+                    "postgres", "toor");
+
+            if (conn == null) {
+                System.out.println("Нет соединения с БД!");
+                System.exit(0);
+            }
+
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+
+            while (rs.next()) {
+                System.out.println(rs.getRow() + ". " + rs.getString("link")
+                        + "\t" + rs.getString("link"));
+            }
+
+            /**
+             * stmt.close();
+             * При закрытии Statement автоматически закрываются
+             * все связанные с ним открытые объекты ResultSet
+             */
+            stmt.close();
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        } finally{
+            if (conn != null){
+                conn.close();
+            }
+        }
     }
 }

@@ -13,4 +13,9 @@ public interface UrlDuplicateRepository extends CrudRepository<UrlDuplicate, Lon
 
     @Query(value = "select link from url_duplicates where link in :links", nativeQuery = true)
     List<String> findAllDuplicates(List<String> links);
+
+    @Query(value = "insert into url (link) values ((:links))" +
+                   "on conflict (link) do nothing returning link",
+                   nativeQuery = true)
+    String saveAllWithDuplicates(List<String> links);
 }
