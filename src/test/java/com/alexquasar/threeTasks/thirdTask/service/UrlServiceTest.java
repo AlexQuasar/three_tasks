@@ -5,6 +5,7 @@ import com.alexquasar.threeTasks.thirdTask.entity.Url;
 import com.alexquasar.threeTasks.thirdTask.entity.UrlDuplicate;
 import com.alexquasar.threeTasks.thirdTask.repository.UrlDuplicateRepository;
 import com.alexquasar.threeTasks.thirdTask.repository.UrlRepository;
+import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -13,6 +14,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -45,24 +47,6 @@ public class UrlServiceTest {
     }
 
     @Test
-    public void addUrlsTest() {
-        int countUrl = 10;
-        int countDuplicates = 0;
-        int maxDuplicates = 0;
-
-        List<String> urls = generatorUrlUtils.generateLinks(countUrl, countDuplicates, maxDuplicates);
-
-        Url url = new Url(urls.get(0));
-        when(urlRepository.findByLink(anyString())).thenReturn(url);
-        when(urlDuplicateRepository.findByLink(anyString())).thenReturn(null);
-
-        urlService.addUrls(urls);
-
-        verify(urlRepository).saveAll(anyCollection());
-        verify(urlDuplicateRepository, times(countUrl)).save(any(UrlDuplicate.class));
-    }
-
-    @Test
     public void getDuplicatesUrlsTest() {
         int countUrl = 100;
         int countDuplicates = 2;
@@ -83,5 +67,19 @@ public class UrlServiceTest {
         assertNotNull(duplicatesUrls);
         assertNotEquals(0, duplicatesUrls.size());
         assertEquals(urls.size(), duplicatesUrls.size());
+    }
+
+    @Test
+    @SneakyThrows
+    public void getDuplicatesLinksTest() {
+        int countUrl = 100_000;
+        int countDuplicates = 10;
+        int maxDuplicates = 10;
+
+        List<String> links = generatorUrlUtils.generateLinks(countUrl, countDuplicates, maxDuplicates);
+
+        Set<String> duplicateLinks = urlService.getDuplicatesLinks(links);
+
+        assertEquals(countDuplicates, duplicateLinks.size());
     }
 }

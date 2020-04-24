@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import static org.junit.Assert.assertEquals;
@@ -80,13 +81,13 @@ public class UrlRestControllerTest {
         int countDuplicates = 0;
         int maxDuplicates = 0;
 
-        List<String> urls = generatorUrlUtils.generateLinks(countUrl, countDuplicates, maxDuplicates);
-        int expectedVisitsSize = urlRepository.findAll().size() + urls.size();
+        List<String> links = generatorUrlUtils.generateLinks(countUrl, countDuplicates, maxDuplicates);
+        int expectedVisitsSize = urlRepository.findAll().size() + links.size();
 
         mockMvc.perform(post(addUrls)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(urls)))
+                .content(mapper.writeValueAsString(links)))
         .andExpect(status().isOk());
 
         assertEquals(expectedVisitsSize, urlRepository.findAll().size());
@@ -98,14 +99,15 @@ public class UrlRestControllerTest {
         String addUrls = urlController + "/addUrls";
         String getDuplicates = urlController + "/getDuplicates";
 
-        // 10_000 - 5 sec // < 1 sec
-        // 100_000 - 35 sec // 9 sec
-        // 1_000_000 - 13 min // 1 min 37 sec
-        // 10_000_000 - ??? > 2 h // 14 min 45 sec
-        long countUrl = 10_000_000L;//10_000_000_000L;
+        // 10_000 - < 1 sec
+        // 100_000 - 9 sec
+        // 1_000_000 - 1 min 37 sec
+        // 10_000_000 - 14 min 45 sec
+        // 100_000_000 - 2 h 34 min 3 sec
+        long countUrl = 100_000_000L;//10_000_000_000L;
         maxSizeCollection = 10_000;
-        int countDuplicatesInOneIteration = 2;
-        int maxDuplicatesInOneIteration = 2;
+        int countDuplicatesInOneIteration = 10;
+        int maxDuplicatesInOneIteration = 10;
         long countIteration = countUrl / maxSizeCollection;
 
         for (long i = 0; i < countIteration; i++) {
@@ -127,5 +129,28 @@ public class UrlRestControllerTest {
 
         long countDuplicates = countIteration * countDuplicatesInOneIteration;
         assertEquals(countDuplicates, duplicatesUrls.size());
+    }
+
+    @Test
+    public void getDuplicatesLinksTest() throws Exception {
+        String getDuplicatesLinks = urlController + "/getDuplicatesLinks";
+
+        int countUrl = 10_000_000;
+        int countDuplicates = 10;
+        int maxDuplicates = 10;
+
+        List<String> links = generatorUrlUtils.generateLinks(countUrl, countDuplicates, maxDuplicates);
+
+        MvcResult result = mockMvc.perform(get(getDuplicatesLinks)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(links)))
+        .andExpect(status().isOk())
+        .andReturn();
+
+        String content = result.getResponse().getContentAsString();
+        Set<String> duplicateLinks = mapper.readValue(content, new TypeReference<Set<String>>() {});
+
+        assertEquals(countDuplicates, duplicateLinks.size());
     }
 }
